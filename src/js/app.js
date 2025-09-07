@@ -22,28 +22,91 @@ import "../style/index.css";
         city: null
     }
  */
-function render(variables = {}) {
-  console.log("These are the current variables: ", variables); // print on the console
-  // here we ask the logical questions to make decisions on how to build the html
-  // if includeCover==false then we reset the cover code without the <img> tag to make the cover transparent.
-  let cover = `<div class="cover"><img src="${variables.background}" /></div>`;
-  if (variables.includeCover == false) cover = "<div class='cover'></div>";
 
-  // reset the website body with the new html output
-  document.querySelector("#widget_content").innerHTML = `<div class="widget">
-            ${cover}
-          <img src="${variables.avatarURL}" class="photo" />
-          <h1>Lucy Boilett</h1>
-          <h2>Web Developer</h2>
-          <h3>Miami, USA</h3>
-          <ul class="position-right">
-            <li><a href="https://twitter.com/4geeksacademy"><i class="fab fa-twitter"></i></a></li>
-            <li><a href="https://github.com/4geeksacademy"><i class="fab fa-github"></i></a></li>
-            <li><a href="https://linkedin.com/school/4geeksacademy"><i class="fab fa-linkedin"></i></a></li>
-            <li><a href="https://instagram.com/4geeksacademy"><i class="fab fa-instagram"></i></a></li>
-          </ul>
-        </div>
-    `;
+function render(variables = {}) {
+  console.log("These are the current variables: ", variables);
+
+  // Cover (con o sin imagen)
+  let cover = `<div class="cover"><img src="${variables.background ||
+    "https://images.unsplash.com/photo-1511974035430-5de47d3b95da"}" /></div>`;
+  if (variables.includeCover === false) cover = "<div class='cover'></div>";
+
+  // Avatar por defecto si viene null
+  const avatar =
+    variables.avatarURL || "https://randomuser.me/api/portraits/women/42.jpg";
+
+  // Nombre completo con fallbacks
+  const name = [variables.name || "Lucy", variables.lastName || "Boilett"]
+    .join(" ")
+    .trim();
+
+  // Rol
+  const role = variables.role || "Web Developer";
+
+  // Localización (city, country) con coma solo si ambos existen
+  const city = variables.city || "Miami";
+  const country = variables.country || "USA";
+  const location = [city, country].filter(Boolean).join(", ");
+
+  // Clase de posición de la barra (admite "left"/"right" o "position-left"/"position-right")
+  const pos = (variables.socialMediaPosition || "position-right")
+    .replace(/^left$/, "position-left")
+    .replace(/^right$/, "position-right");
+  const positionClass =
+    pos === "position-left" || pos === "position-right"
+      ? pos
+      : "position-right";
+
+  // Links de redes SOLO si hay username
+  const socials = [
+    variables.twitter
+      ? {
+          href: `https://twitter.com/${variables.twitter}`,
+          icon: "fab fa-twitter"
+        }
+      : null,
+    variables.github
+      ? {
+          href: `https://github.com/${variables.github}`,
+          icon: "fab fa-github"
+        }
+      : null,
+    variables.linkedin
+      ? {
+          href: `https://linkedin.com/in/${variables.linkedin}`,
+          icon: "fab fa-linkedin"
+        }
+      : null,
+    variables.instagram
+      ? {
+          href: `https://instagram.com/${variables.instagram}`,
+          icon: "fab fa-instagram"
+        }
+      : null
+  ].filter(Boolean);
+
+  const socialList = socials.length
+    ? `<ul class="${positionClass}">
+         ${socials
+           .map(
+             s =>
+               `<li><a href="${s.href}" target="_blank" rel="noopener"><i class="${s.icon}"></i></a></li>`
+           )
+           .join("")}
+       </ul>`
+    : ""; // si no hay redes, no pintamos la UL
+
+  // Render final
+  document.querySelector("#widget_content").innerHTML = `
+    <div class="widget">
+      ${cover}
+      <img src="${avatar}" class="photo" />
+      <h1>${name}</h1>
+      <h2>${role}</h2>
+      <h3>${location}</h3>
+      ${socialList}
+    </div>
+  `;
 }
 
 /**
